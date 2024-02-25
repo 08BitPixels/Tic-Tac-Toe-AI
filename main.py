@@ -10,7 +10,7 @@ from constants import *
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tic Tac Toe AI')
-pygame.display.set_icon(pygame.image.load('images/icon.png').convert_alpha())
+pygame.display.set_icon(pygame.image.load('images/icon.ico').convert_alpha())
 
 class Game:
 
