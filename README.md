@@ -1,8 +1,7 @@
-==== ABOUT ====
+# Tic Tac Toe AI
+A PvAI Tic Tac Toe game that uses the unbeatable Minimax Algorithm to play against you.
 
-- Coded with Python
-- Built on PyGame
-- Uses the unbeatable Minimax Algorithm to play against you
+_Built on Python using the PyGame module._
 
 ==== CONFIG ====
 
