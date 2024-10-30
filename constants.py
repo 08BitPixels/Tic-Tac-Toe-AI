@@ -1,6 +1,15 @@
 # Board Dimensions
-COLS, ROWS = 3, 3
+COLS, ROWS = 4, 4
 WIN_ROW = 3
+
+# Game Setup
+GAMEMODE = 'PvAI' # PvAI  or PvP
+FIRST_PLAYER = 1 # P1 = cross | P2 = circle
+
+# AI Setup
+AI_LEVEL = 1 # 1 = Minimax, 0 = Random
+AI_ACCURACY = -1 # -1 = Perfect, 1 = Worst, >1 = Better
+AI_PLAYER = 2 # P1 / P2
 
 # Screen Dimensions
 HEIGHT = 600
@@ -17,7 +26,7 @@ RADIUS = SQ_SIZE / 4
 OFFSET = SQ_SIZE / 4
 WIN_LINE_OFFSET = SQ_SIZE / 6
 
-# COlours
+# Colours
 BG_COLOUR = (28, 170, 156)
 LINE_COLOUR = (23, 145, 135)
 CIRC_COLOUR = (239, 231, 200)

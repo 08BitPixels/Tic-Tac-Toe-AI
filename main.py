@@ -1,11 +1,18 @@
 import pygame
 
+from threading import Thread
 from copy import deepcopy
 from time import time
 from random import choice
 from numpy import zeros
 
 from constants import *
+
+# TO DO
+# - Add threading for AI minimaax
+# - Add a config.txt with all configurable vars
+# - Add pyinstalller support
+# - Create .exe file (with console)
 
 # PYGAME SETUP
 pygame.init()
@@ -18,10 +25,10 @@ class Game:
 	def __init__(self) -> None:
 
 		self.board = Board()
-		self.ai = AI(game = self, level = 1, player = 2, accuracy = -1)
-		self.gamemode = 'PvAI' # PvP or PvAI
+		self.ai = AI(game = self, level = AI_LEVEL, player = AI_PLAYER, accuracy = AI_ACCURACY)
+		self.gamemode = GAMEMODE
 		self.running = True
-		self.player = 1 # P1 = cross, P2 = circle
+		self.player = FIRST_PLAYER
 		self.show_lines()
 
 	def make_move(self, col: int, row: int) -> None:
@@ -225,7 +232,7 @@ class AI:
 	def rnd(self, board: Board) -> int:
 		return choice(board.get_empty_sqs())
 
-	def minimax(self, board: Board, maximising: bool, iter: int) -> tuple: # -> eval, move
+	def minimax(self, board: Board, maximising: bool, iter: int, eval_var: int | None = None) -> tuple: # -> eval, move
 
 		for event in pygame.event.get():
 
@@ -253,7 +260,8 @@ class AI:
 
 				temp_board = deepcopy(board)
 				temp_board.mark_sq(col, row, 1 if self.player == 2 else 2)
-				eval = self.minimax(temp_board, False, iter)[0]
+				eval = None
+				self.minimax(temp_board, False, iter, eval_var = eval)[0]
 
 				if eval < max_eval:
 
@@ -272,7 +280,8 @@ class AI:
 
 				temp_board = deepcopy(board)
 				temp_board.mark_sq(col, row, self.player)
-				eval = self.minimax(temp_board, True, iter)[0]
+				eval = None
+				self.minimax(temp_board, True, iter, eval_var = eval)[0]
 
 				if eval > min_eval:
 
@@ -294,7 +303,7 @@ class AI:
 			eval, move = self.minimax(main_board, False, 0)
 			end_time = time()
 
-		print(f"Player {self.player} (AI) moved in Position: {move}, Evalution: {eval}. ({self.game.time_convert(end_time - start_time, 5)})")
+		print(f"Player {self.player} (AI) moved in Position: {move}, Evalution: {eval}. ({self.game.time_convert(end_time - start_time, 2)})")
 
 		return move # row, col
 
