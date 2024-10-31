@@ -1,6 +1,7 @@
 import pygame
+import sys
+import os
 
-from threading import Thread
 from copy import deepcopy
 from time import time
 from random import choice
@@ -9,14 +10,27 @@ from numpy import zeros
 from constants import *
 
 # TO DO
-# - Add threading for AI minimaax
+# - Move loading config to constants.py
 # - Add a config.txt with all configurable vars
-# - Add pyinstalller support
+# - Auto screen width / height (depening on setting)
+# - Add pyinstalller support (resource paths)
 # - Create .exe file (with console)
+
+def resource_path(relative_path: str) -> str: 
+
+    try: base_path = sys._MEIPASS
+    except Exception: base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def save_path(relative_path: str) -> str:
+
+    if getattr(sys, 'frozen', False): return os.path.join(os.getenv('APPDATA'), '08BitPixels/Tic Tac Toe AI/', relative_path)
+    else: return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 # PYGAME SETUP
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode()
 pygame.display.set_caption('Tic Tac Toe AI')
 pygame.display.set_icon(pygame.image.load('images/icon.ico').convert_alpha())
 
@@ -24,6 +38,10 @@ class Game:
 
 	def __init__(self) -> None:
 
+		global screen
+
+		self.config = self.load_save()
+		screen = pygame.display.set_mode((self.config['SCREEN_WIDTH'], self.config['SCREEN_HEIGHT']))
 		self.board = Board()
 		self.ai = AI(game = self, level = AI_LEVEL, player = AI_PLAYER, accuracy = AI_ACCURACY)
 		self.gamemode = GAMEMODE
@@ -81,7 +99,7 @@ class Game:
 		self.player = (self.player % 2) + 1
 
 	def change_gamemode(self) -> None:
-		self.gamemode = 'PvAI' if self.gamemode == 'PvP' else 'PvP'
+		self.gamemode = (self.gamemode + 1) % 1
 
 	def reset(self) -> None:
 		self.__init__()
@@ -97,10 +115,68 @@ class Game:
 
 		return f'{int(mins)} Minutes, {round(seconds, rd)} Seconds'
 
+	def save(
+			self, 
+		  	settings: dict[
+				  
+				'COLS': int,
+				'ROWS': int,
+				'WIN_ROW': int,
+				'GAMEMODE': str[0] | str[1],
+				'FIRST_PLAYER': int[0] | int[1],
+				'AI_LEVEL': int[0] | int[1],
+				'AI_ACCURACY': int,
+				'AI_PLAYER': int[0] | int[1],
+				'SCREEN_HEIGHT': int | str['auto'],
+				'SCREEN_WIDTH': int | str['auto']
+
+			]
+		) -> None:
+
+		print('Saving...')
+		with open(save_path('config\\config.txt'), 'w') as config: config.writelines([f'{setting}: {data}' for setting, data in settings.items()])
+		with open(save_path('config\\config.txt'), 'a') as config: config.writelines(TUTORIAL_TEXT)
+		print('Saved')
+
+	def load_save(self) -> dict[
+								'COLS': int,
+								'ROWS': int,
+								'WIN_ROW': int,
+								'GAMEMODE': str[0] | str[1],
+								'FIRST_PLAYER': int[0] | int[1],
+								'AI_LEVEL': int[0] | int[1],
+								'AI_ACCURACY': int,
+								'AI_PLAYER': int[0] | int[1],
+								'SCREEN_HEIGHT': int | str['auto'],
+								'SCREEN_WIDTH': int | str['auto']
+							]:
+
+		if os.path.isdir(save_path('config\\')):
+
+			with open(save_path('config\\config.txt')) as config_file: 
+
+				config = {}
+
+				for line in config_file.readlines():
+
+					setting = line.split(': ')[0]
+					data = line.split(': ')[1]
+					config[setting] = int(data) if data.isnumeric() else data
+			
+				return config
+
+		else:
+
+			print('No save file present; creating new one...')
+			os.makedirs(save_path('config\\'))
+			self.save(data = DEFAULT_CONFIG)
+			return DEFAULT_CONFIG
+
 class Board:
 
-	def __init__(self) -> None:
+	def __init__(self, game: Game) -> None:
 
+		self.game = game
 		self.squares = zeros((ROWS, COLS))
 		self.empty_sqs = self.squares
 		self.marked_sqs = 0
@@ -232,7 +308,7 @@ class AI:
 	def rnd(self, board: Board) -> int:
 		return choice(board.get_empty_sqs())
 
-	def minimax(self, board: Board, maximising: bool, iter: int, eval_var: int | None = None) -> tuple: # -> eval, move
+	def minimax(self, board: Board, maximising: bool, iter: int) -> tuple: # -> eval, move
 
 		for event in pygame.event.get():
 
@@ -260,8 +336,7 @@ class AI:
 
 				temp_board = deepcopy(board)
 				temp_board.mark_sq(col, row, 1 if self.player == 2 else 2)
-				eval = None
-				self.minimax(temp_board, False, iter, eval_var = eval)[0]
+				eval = self.minimax(temp_board, False, iter)[0]
 
 				if eval < max_eval:
 
@@ -280,8 +355,7 @@ class AI:
 
 				temp_board = deepcopy(board)
 				temp_board.mark_sq(col, row, self.player)
-				eval = None
-				self.minimax(temp_board, True, iter, eval_var = eval)[0]
+				eval = self.minimax(temp_board, True, iter)[0]
 
 				if eval > min_eval:
 
@@ -332,7 +406,7 @@ Gamemode: {game.gamemode}
 			if event.type == pygame.QUIT:
 
 				pygame.quit()
-				exit()
+				sys.exit()
 
 			# Keypresses
 			if event.type == pygame.KEYDOWN:
@@ -341,7 +415,7 @@ Gamemode: {game.gamemode}
 				if event.key == pygame.K_g:
 
 					game.change_gamemode()
-					print(f'Gamemode: {game.gamemode}\n')
+					print(f'Gamemode: {['PvAI', 'PvP'][game.gamemode]}\n')
 
 				# r = Restart the Game
 				if event.key == pygame.K_r:
