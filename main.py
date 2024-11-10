@@ -10,11 +10,9 @@ from numpy import zeros
 from constants import *
 
 # TO DO
-# - Move loading config to constants.py
-# - Add a config.txt with all configurable vars
-# - Auto screen width / height (depening on setting)
 # - Add pyinstalller support (resource paths)
 # - Create .exe file (with console)
+# - Format readme.md
 
 def resource_path(relative_path: str) -> str: 
 
@@ -23,25 +21,16 @@ def resource_path(relative_path: str) -> str:
 
     return os.path.join(base_path, relative_path)
 
-def save_path(relative_path: str) -> str:
-
-    if getattr(sys, 'frozen', False): return os.path.join(os.getenv('APPDATA'), '08BitPixels/Tic Tac Toe AI/', relative_path)
-    else: return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
-
 # PYGAME SETUP
 pygame.init()
-screen = pygame.display.set_mode()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tic Tac Toe AI')
-pygame.display.set_icon(pygame.image.load('images/icon.ico').convert_alpha())
+pygame.display.set_icon(pygame.image.load(resource_path('images/icon.ico')).convert_alpha())
 
 class Game:
 
 	def __init__(self) -> None:
-
-		global screen
-
-		self.config = self.load_save()
-		screen = pygame.display.set_mode((self.config['SCREEN_WIDTH'], self.config['SCREEN_HEIGHT']))
+		
 		self.board = Board()
 		self.ai = AI(game = self, level = AI_LEVEL, player = AI_PLAYER, accuracy = AI_ACCURACY)
 		self.gamemode = GAMEMODE
@@ -64,15 +53,17 @@ class Game:
 			if self.board.final_state(show = False) == 0: print('\nGAME OVER: Draw')
 			else: print(f'\nGAME OVER: Player {int(self.board.final_state(show = False))} Wins')
 
+			print('Press [R] to start a new game')
+
 	def show_lines(self) -> None:
 
 		screen.fill(BG_COLOUR)
 		# Draws lines for the board
-		for line in range(COLS + 1): # vertical
-			pygame.draw.line(screen, LINE_COLOUR, (SQ_SIZE * line, 0), (SQ_SIZE * line, HEIGHT), LINE_WIDTH)
+		for line in range(COLS - 1): # vertical
+			pygame.draw.line(screen, LINE_COLOUR, (SQ_SIZE * (line + 1), 0), (SQ_SIZE * (line + 1), HEIGHT), LINE_WIDTH)
 
-		for line in range(ROWS + 1): # horizontal
-			pygame.draw.line(screen, LINE_COLOUR, (0, SQ_SIZE * line), (WIDTH, SQ_SIZE * line), LINE_WIDTH)
+		for line in range(ROWS - 1): # horizontal
+			pygame.draw.line(screen, LINE_COLOUR, (0, SQ_SIZE * (line + 1)), (WIDTH, SQ_SIZE * (line + 1)), LINE_WIDTH)
 
 		pygame.display.update() # Update the screen
 
@@ -99,10 +90,15 @@ class Game:
 		self.player = (self.player % 2) + 1
 
 	def change_gamemode(self) -> None:
-		self.gamemode = (self.gamemode + 1) % 1
+		self.gamemode = (self.gamemode + 1) % 2
 
 	def reset(self) -> None:
-		self.__init__()
+
+		self.board = Board()
+		self.ai = AI(game = self, level = AI_LEVEL, player = AI_PLAYER, accuracy = AI_ACCURACY)
+		self.running = True
+		self.player = FIRST_PLAYER
+		self.show_lines()
 
 	def is_over(self) -> bool:
 		return self.board.final_state(show = True) != 0 or self.board.is_full()
@@ -115,68 +111,10 @@ class Game:
 
 		return f'{int(mins)} Minutes, {round(seconds, rd)} Seconds'
 
-	def save(
-			self, 
-		  	settings: dict[
-				  
-				'COLS': int,
-				'ROWS': int,
-				'WIN_ROW': int,
-				'GAMEMODE': str[0] | str[1],
-				'FIRST_PLAYER': int[0] | int[1],
-				'AI_LEVEL': int[0] | int[1],
-				'AI_ACCURACY': int,
-				'AI_PLAYER': int[0] | int[1],
-				'SCREEN_HEIGHT': int | str['auto'],
-				'SCREEN_WIDTH': int | str['auto']
-
-			]
-		) -> None:
-
-		print('Saving...')
-		with open(save_path('config\\config.txt'), 'w') as config: config.writelines([f'{setting}: {data}' for setting, data in settings.items()])
-		with open(save_path('config\\config.txt'), 'a') as config: config.writelines(TUTORIAL_TEXT)
-		print('Saved')
-
-	def load_save(self) -> dict[
-								'COLS': int,
-								'ROWS': int,
-								'WIN_ROW': int,
-								'GAMEMODE': str[0] | str[1],
-								'FIRST_PLAYER': int[0] | int[1],
-								'AI_LEVEL': int[0] | int[1],
-								'AI_ACCURACY': int,
-								'AI_PLAYER': int[0] | int[1],
-								'SCREEN_HEIGHT': int | str['auto'],
-								'SCREEN_WIDTH': int | str['auto']
-							]:
-
-		if os.path.isdir(save_path('config\\')):
-
-			with open(save_path('config\\config.txt')) as config_file: 
-
-				config = {}
-
-				for line in config_file.readlines():
-
-					setting = line.split(': ')[0]
-					data = line.split(': ')[1]
-					config[setting] = int(data) if data.isnumeric() else data
-			
-				return config
-
-		else:
-
-			print('No save file present; creating new one...')
-			os.makedirs(save_path('config\\'))
-			self.save(data = DEFAULT_CONFIG)
-			return DEFAULT_CONFIG
-
 class Board:
 
-	def __init__(self, game: Game) -> None:
+	def __init__(self) -> None:
 
-		self.game = game
 		self.squares = zeros((ROWS, COLS))
 		self.empty_sqs = self.squares
 		self.marked_sqs = 0
@@ -393,7 +331,10 @@ def main():
 Screen Dimensions: {WIDTH} x {HEIGHT}
 Board Dimensions: {COLS} x {ROWS}
 Win Row: {WIN_ROW}
-Gamemode: {game.gamemode}
+Gamemode: {['PvAI', 'PvP'][game.gamemode]}
+
+AI Level: {AI_LEVEL} ({['Random', 'Intelligent - Minimax Algorithm'][AI_LEVEL]})
+AI Accuracy: {AI_ACCURACY} {'(Perfect)' if AI_ACCURACY == -1 else ''}
 
 ------------- New Game -------------
 	''')
@@ -405,6 +346,28 @@ Gamemode: {game.gamemode}
 			# If you close the pygame window
 			if event.type == pygame.QUIT:
 
+				data = {
+
+					'SCREEN_WIDTH': SCREEN_WIDTH,
+					'SCREEN_HEIGHT': SCREEN_HEIGHT,
+
+					'COLS': COLS,
+					'ROWS': ROWS,
+					'WIN_ROW': WIN_ROW,
+					'GAMEMODE': GAMEMODE,
+					'FIRST_PLAYER': FIRST_PLAYER, 
+
+					'AI_LEVEL': AI_LEVEL,
+					'AI_ACCURACY': AI_ACCURACY,
+					'AI_PLAYER': AI_PLAYER,
+
+					'BG_COLOUR': BG_COLOUR,
+					'LINE_COLOUR': LINE_COLOUR,
+					'CIRC_COLOUR': CIRC_COLOUR,
+					'CROSS_COLOUR': CROSS_COLOUR
+					
+				}
+				save(data = data)
 				pygame.quit()
 				sys.exit()
 
@@ -443,7 +406,7 @@ Gamemode: {game.gamemode}
 					print(f'Player {game.player} moved in Position: {(col, row)}')
 					game.make_move(col, row)
 
-		if game.gamemode == 'PvAI' and game.player == ai.player and game.running:
+		if game.gamemode == 0 and game.player == ai.player and game.running:
 
 			col, row = ai.eval(board)
 			game.make_move(col, row)
