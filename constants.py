@@ -17,7 +17,7 @@ def save_path(relative_path: str) -> str:
     else: return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 def save(
-		  	data: dict[
+		  	settings: dict[
 				  
 				'SCREEN_WIDTH': int | str, # value / 'auto'
 				'SCREEN_HEIGHT': int | str, # value / 'auto'
@@ -38,6 +38,7 @@ def save(
 				'CROSS_COLOUR': tuple[int, int, int] | str,
 
 			]
+			
 		) -> None:
 
 		print('\nSaving...')
@@ -47,33 +48,41 @@ def save(
 
 f'''# CONFIG
 
-## Screen Setup
-{'\n'.join([f'{setting} = {data}' for setting, data in list(data.items())[:2]])}
+## Screen Setup ----
+{'\n'.join([f'{setting} = {data}' for setting, data in list(settings.items())[:2]])}
 
-## Game Setup
-{'\n'.join([f'{setting} = {data}' for setting, data in list(data.items())[2:7]])}
+## Game Setup ----
+{'\n'.join([f'{setting} = {data}' for setting, data in list(settings.items())[2:7]])}
 
-## AI Setup
-{'\n'.join([f'{setting} = {data}' for setting, data in list(data.items())[7:10]])}
+## AI Setup ----
+{'\n'.join([f'{setting} = {data}' for setting, data in list(settings.items())[7:10]])}
 
-## Colours
-{'\n'.join([f'{setting} = {data}' for setting, data in list(data.items())[10:]])}
+## Colours ----
+{'\n'.join([f'{setting} = {data}' for setting, data in list(settings.items())[10:]])}
 
+-----------------------------------------------------------------------------------------------------------------------------------
 # CONFIG EXPLAINED
 
-## Game Setup
+## Screen Setup ----
+SCREEN WIDTH / HEIGHT: int = it will be that value, auto = will determine value from other value specified and the board dimensions
+(AT LEAST ONE NEEDS TO BE AUTO, AND THEY CANNOT BOTH BE AUTO)
+
+## Game Setup ----
 COLS, ROWS: The dimensions of the board
 WIN_ROW: How many someone is required to 'get in a row'
 GAMEMODE: 0 = PvAI, 1 = PvP
 FIRST_PLAYER: Which player goes first. P1 = Cross, P2 = Circle
 
-## AI Setup
+## AI Setup ----
 AI_LEVEL: 1 = AI uses Minimax algorithm, 0 = AI chooses a random move
 AI_ACCURACY: -1 = Perfect (takes longest to think), 1 = Worst, Ranging from 1 upwards = Progressively Better
 
-## Screen Setup
-SCREEN WIDTH / HEIGHT: int = it will be that value, auto = will determine value from other value specified and the board dimensions
-- At least 1 needs to be auto, and they cannot both be auto.'''
+## Colours ----
+BG_COLOUR: The colour of the board background
+LINE_COLOUR: The colour of the lines on the board
+CIRC_COLOUR: The colour of the circle icon
+CROSS_COLOUR: The colour of the cross icon
+(ALL COLOURS MUST BE THEIR HEXADECIMAL VALUES)'''
 
 			)
 
@@ -81,9 +90,9 @@ SCREEN WIDTH / HEIGHT: int = it will be that value, auto = will determine value 
 
 def load_save() -> dict:
 
-	if os.path.isdir(save_path('config\\')):
+	if os.path.isfile(save_path('config\\config.txt')):
 
-		with open(save_path('config\\config.txt')) as config_file: 
+		with open(save_path('config\\config.txt'), 'r') as config_file: 
 
 			config = {}
 			contents = config_file.readlines()
@@ -99,8 +108,8 @@ def load_save() -> dict:
 	else:
 
 		print('\nNo save file present; creating new one...')
-		os.makedirs(save_path('config\\'))
-		save(data = DEFAULT_CONFIG)
+		if not os.path.isdir(save_path('config\\')): os.makedirs(save_path('config\\'))
+		save(settings = DEFAULT_CONFIG)
 		return DEFAULT_CONFIG
 
 def screen_dimensions(screen_dims: tuple[int | str, int | str], board_dims: tuple[int, int]) -> tuple[int, int]:

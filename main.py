@@ -10,7 +10,6 @@ from numpy import zeros
 from constants import *
 
 # TO DO
-# - Add pyinstalller support (resource paths)
 # - Create .exe file (with console)
 # - Format readme.md
 
@@ -367,7 +366,7 @@ AI Accuracy: {AI_ACCURACY} {'(Perfect)' if AI_ACCURACY == -1 else ''}
 					'CROSS_COLOUR': CROSS_COLOUR
 					
 				}
-				save(data = data)
+				save(settings = data)
 				pygame.quit()
 				sys.exit()
 
