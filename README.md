@@ -20,25 +20,25 @@ _* All of this info is also in the text file (`config.txt`)_
 
 Using config.txt (located at `%appdata%/08BitPixels/Tic Tac Toe AI/config`), you can configure;
 
-### Screen Settings:
+### Screen Settings
 - The dimensions of the screen (Width / Height)
 - If you enter a value: it will be that value
 - If you enter 'auto': will determine value from the other value specified and the board dimensions
 
 _* At least one needs to be auto, and they cannot both be auto_
 
-### Game Settings:
+### Game Settings
 - The size of the board `(cols + rows)`
 - The starting gamemode `(0 = PvAI, 1 = PvP)`
 - The first player to make a move `(P1 = Cross, P2 = Circle)`
 - How many tiles are needed in a row to win
   
-### AI Settings:
+### AI Settings
 - The level of the AI `(0 = Random, 1 = Intelligent - Minimax Algorithm)`
 - The Accuracy of the AI `(-1 = Perfect, 1 = Worst, Ranging from 1 upwards = Progressively Better)`
 - Which player the AI is `(1 = P1, 2 = P2)`
   
-### The Colours:
+### The Colours
 - The colour of the board background
 - The colour of the lines on the board
 - The colour of the circle icon
