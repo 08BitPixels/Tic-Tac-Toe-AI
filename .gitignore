@@ -6,3 +6,4 @@ replit.nix
 config/
 .vscode/
 __pycache__/
+pyinstaller/

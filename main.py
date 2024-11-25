@@ -9,10 +9,6 @@ from numpy import zeros
 
 from constants import *
 
-# TO DO
-# - Create .exe file (with console)
-# - Format readme.md
-
 def resource_path(relative_path: str) -> str: 
 
     try: base_path = sys._MEIPASS
@@ -94,7 +90,6 @@ class Game:
 	def reset(self) -> None:
 
 		self.board = Board()
-		self.ai = AI(game = self, level = AI_LEVEL, player = AI_PLAYER, accuracy = AI_ACCURACY)
 		self.running = True
 		self.player = FIRST_PLAYER
 		self.show_lines()
@@ -305,8 +300,10 @@ class AI:
 
 		if self.level == 0: # Random choice
 
+			start_time = time()
 			eval = 'random'
 			move = self.rnd(main_board)
+			end_time = time()
 
 		elif self.level == 1: # Minimax algorithm choice
 
@@ -317,6 +314,9 @@ class AI:
 		print(f"Player {self.player} (AI) moved in Position: {move}, Evalution: {eval}. ({self.game.time_convert(end_time - start_time, 2)})")
 
 		return move # row, col
+
+	def change_level(self) -> None:
+		self.level = (self.level + 1) % 2
 
 def main():
 
@@ -385,13 +385,13 @@ AI Accuracy: {AI_ACCURACY} {'(Perfect)' if AI_ACCURACY == -1 else ''}
 					game.reset()
 					board = game.board
 					ai = game.ai
-					print('''\n------------- New Game -------------\n''')
+					print('''\n------------- New Game -------------\n''')			
 
-				# 0 = Switch AI to Random Mode
-				if event.key == pygame.K_0: ai.level = 0
-
-				# 1 = Switch AI to Intelligent Mode
-				if event.key == pygame.K_1: ai.level = 1
+				# Toggle between Intelligent + Random
+				if event.key == pygame.K_m: 
+					
+					ai.change_level()
+					print(f'AI Level: {ai.level} ({['Random', 'Intelligent - Minimax Algorithm'][ai.level]})')
 
 			# Mouse Clicks
 			if event.type == pygame.MOUSEBUTTONDOWN:
