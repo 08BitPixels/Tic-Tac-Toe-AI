@@ -7,7 +7,12 @@ from time import time
 from random import choice
 from numpy import zeros
 
-from constants import *
+from constants import (
+	WIDTH, HEIGHT, COLS, ROWS, GAMEMODE, FIRST_PLAYER, WIN_ROW,
+	AI_LEVEL, AI_ACCURACY, AI_PLAYER,
+	BG_COLOUR, LINE_COLOUR, CIRC_COLOUR, CROSS_COLOUR, 
+	SQ_SIZE, OFFSET, CROSS_WIDTH, CIRC_WIDTH, RADIUS, WIN_LINE_OFFSET,
+)
 
 def resource_path(relative_path: str) -> str: 
 
